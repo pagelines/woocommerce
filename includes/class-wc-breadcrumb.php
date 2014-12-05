@@ -47,6 +47,7 @@ class WC_Breadcrumb {
 
 	/**
 	 * Generate breadcrumb trail
+	 * @return array of breadcrumbs
 	 */
 	public function generate() {
 		$conditionals = array(
@@ -75,7 +76,11 @@ class WC_Breadcrumb {
 
 			$this->search_trail();
 			$this->paged_trail();
+
+			return $this->get_breadcrumb();
 		}
+
+		return array();
 	}
 
 	/**
@@ -136,7 +141,10 @@ class WC_Breadcrumb {
 			$this->add_crumb( $post_type->labels->singular_name, get_post_type_archive_link( get_post_type() ) );
 		} else {
 			$cat = current( get_the_category() );
-			$this->term_ancestors( $cat, 'post_category' );
+			if ( $cat ) {
+				$this->term_ancestors( $cat->term_id, 'post_category' );
+				$this->add_crumb( $cat->name, get_term_link( $cat ) );
+			}
 		}
 
 		$this->add_crumb( get_the_title() );
@@ -166,11 +174,7 @@ class WC_Breadcrumb {
 		}
 
 		$this->add_crumb( get_the_title(), get_permalink() );
-
-		// Is an endpoint showing?
-		if ( is_wc_endpoint_url() && ( $endpoint = WC()->query->get_current_endpoint() ) && ( $endpoint_title = WC()->query->get_endpoint_title( $endpoint ) ) ) {
-			$this->add_crumb( $endpoint_title );
-		}
+		$this->endpoint_trail();
 	}
 
 	/**
@@ -283,11 +287,21 @@ class WC_Breadcrumb {
 	}
 
 	/**
+	 * Endpoints
+	 */
+	private function endpoint_trail() {
+		// Is an endpoint showing?
+		if ( is_wc_endpoint_url() && ( $endpoint = WC()->query->get_current_endpoint() ) && ( $endpoint_title = WC()->query->get_endpoint_title( $endpoint ) ) ) {
+			$this->add_crumb( $endpoint_title );
+		}
+	}
+
+	/**
 	 * Add a breadcrumb for search results
 	 */
 	private function search_trail() {
 		if ( is_search() ) {
-			$this->add_crumb( sprintf( __( 'Search results for &ldquo;%s&rdquo;', 'woocommerce' ), get_search_query() ) );
+			$this->add_crumb( sprintf( __( 'Search results for &ldquo;%s&rdquo;', 'woocommerce' ), get_search_query() ), remove_query_arg( 'paged' ) );
 		}
 	}
 

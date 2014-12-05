@@ -11,35 +11,30 @@
 if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
+?>
 
-$breadcrumbs = new WC_Breadcrumb();
+<?php if ( $breadcrumb ) : ?>
 
-if ( $home ) {
-	$breadcrumbs->add_crumb( $home, home_url() );
-}
-$breadcrumbs->generate();
-$breadcrumb = $breadcrumbs->get_breadcrumb();
+	<?php echo $wrap_before; ?>
 
-echo $wrap_before;
+	<?php foreach ( $breadcrumb as $key => $crumb ) : ?>
 
-foreach ( $breadcrumb as $key => $crumb ) {
-	echo $before;
+		<?php echo $before; ?>
 
-	if ( ! empty( $crumb[1] ) && end( array_keys( $breadcrumb ) ) !== $key ) {
-		echo '<a href="' . esc_url( $crumb[1] ) . '">';
-	}
+		<?php if ( ! empty( $crumb[1] ) && sizeof( $breadcrumb ) !== $key + 1 ) : ?>
+			<?php echo '<a href="' . esc_url( $crumb[1] ) . '">' . esc_html( $crumb[0] ) . '</a>'; ?>
+		<?php else : ?>
+			<?php echo esc_html( $crumb[0] ); ?>
+		<?php endif; ?>
 
-	echo esc_html( $crumb[0] );
+		<?php echo $after; ?>
 
-	if ( ! empty( $crumb[1] ) && end( array_keys( $breadcrumb ) ) !== $key ) {
-		echo '</a>';
-	}
+		<?php if ( sizeof( $breadcrumb ) !== $key + 1 ) : ?>
+			<?php echo $delimiter; ?>
+		<?php endif; ?>
 
-	echo $after;
+	<?php endforeach; ?>
 
-	if ( end( array_keys( $breadcrumb ) ) !== $key ) {
-		echo $delimiter;
-	}
-}
+	<?php echo $wrap_after; ?>
 
-echo $wrap_after;
+<?php endif; ?>
